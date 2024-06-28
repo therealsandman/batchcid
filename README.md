@@ -139,6 +139,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 Here’s a suggested directory structure for your repository:
 
 ```
+
 web3-batch-uploader/
 ├── .env.example
 ├── .gitignore
@@ -147,6 +148,7 @@ web3-batch-uploader/
 ├── package.json
 ├── upload.js
 └── node_modules/
+
 ```
 
 - **.env.example**: An example `.env` file to show users how to format their environment variables.
