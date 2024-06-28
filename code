@@ -1,0 +1,40 @@
+const { Web3Storage, getFilesFromPath } = require('web3.storage')
+const fs = require('fs')
+const path = require('path')
+require('dotenv').config()
+
+async function uploadInBatches(directoryPath, batchSize) {
+  const client = new Web3Storage({ token: process.env.WEB3_STORAGE_API_TOKEN })
+  const allFiles = await getFilesFromPath(directoryPath)
+  const totalFiles = allFiles.length
+
+  let uploadedCIDs = []
+
+  for (let i = 0; i < totalFiles; i += batchSize) {
+    const batch = allFiles.slice(i, i + batchSize)
+    const cid = await client.put(batch)
+    uploadedCIDs.push(cid)
+    console.log(`Batch ${Math.floor(i / batchSize) + 1} uploaded with CID: ${cid}`)
+  }
+
+  const manifestPath = path.join(directoryPath, 'manifest.txt')
+  fs.writeFileSync(manifestPath, uploadedCIDs.join('\n'))
+
+  const rootCID = await client.put(allFiles)
+  console.log(`Root CID for the entire directory: ${rootCID}`)
+
+  return rootCID
+}
+
+const args = process.argv.slice(2)
+const directoryPath = args[0]
+const batchSize = parseInt(args[1], 10)
+
+if (!directoryPath || isNaN(batchSize)) {
+  console.error('Usage: node upload.js <directory-path> <batch-size>')
+  process.exit(1)
+}
+
+uploadInBatches(directoryPath, batchSize)
+  .then(rootCID => console.log(`Upload complete. Root CID: ${rootCID}`))
+  .catch(err => console.error(`Error uploading files: ${err}`))
